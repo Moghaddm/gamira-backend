@@ -1,6 +1,10 @@
 package auth
 
+import (
+	"go.mongodb.org/mongo-driver/bson/primitive"
+)
+
 type User struct {
-	ID          int64  `bson:"_id,omitempty"`
-	PhoneNumber string `bson:"phone_number,omitempty"`
+	ID          primitive.ObjectID `bson:"_id,omitempty"`
+	PhoneNumber string             `bson:"phone_number,omitempty"`
 }
