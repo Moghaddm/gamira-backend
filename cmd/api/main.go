@@ -2,29 +2,41 @@ package main
 
 import (
 	"fmt"
-	"gamira/cache"
 	"gamira/common"
+	"gamira/configs"
 	"gamira/internal/auth"
 	"gamira/internal/divar"
-	"gamira/log"
 	"log/slog"
 	"net/http"
 	"os"
 )
 
 func main() {
-	logger := log.NewLogger()
+	// logger
+	logger := configs.NewLogger()
 	slog.SetDefault(logger)
 
-	redis := cache.NewRedis()
+	// clients
+	redis := configs.NewRedis()
+	mongo := configs.NewMongoClient()
 
+	// db
+	dbName := os.Getenv("MONGO_DB_NAME")
+	db := mongo.Database(dbName)
+
+	// repositories
+	userRepo := auth.NewRepository(db.Collection("user"))
+
+	// handlers
 	divarHandler := divar.NewHandler(redis)
-	authHandler := auth.NewHandler(redis)
+	authHandler := auth.NewHandler(redis, userRepo)
 
-	// divar
-	http.Handle("/divar/start-flow", common.Handler(divarHandler.StartFlow))
-	http.Handle("/auth/init", common.Handler(authHandler.Init))
+	// end-points
+	http.Handle("POST /divar/start-flow", common.Handler(divarHandler.StartFlow))
+	http.Handle("POST /auth/init", common.Handler(authHandler.Init))
+	http.Handle("POST /auth/callback", common.Handler(authHandler.Callback))
 
+	// http
 	slog.Info("Application starting...")
 	port := os.Getenv("APP_PORT")
 	addr := fmt.Sprintf(":%s", port)

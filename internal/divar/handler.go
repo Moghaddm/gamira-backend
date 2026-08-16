@@ -62,11 +62,8 @@ func (h *Handler) StartFlow(w http.ResponseWriter, r *http.Request) error {
 	}(r.Body)
 
 	// decode body
-	var createSession struct {
-		PostToken     string `json:"post_token"`
-		CompletionUrl string `json:"completion_url"`
-	}
-	if err := json.Unmarshal(b, &createSession); err != nil {
+	var session Session
+	if err := json.Unmarshal(b, &session); err != nil {
 		return err
 	}
 
@@ -75,8 +72,8 @@ func (h *Handler) StartFlow(w http.ResponseWriter, r *http.Request) error {
 	rnd := rand.New(src).Int31()
 
 	// set session
-	session := fmt.Sprintf("session:%s", strconv.Itoa(int(rnd)))
-	err = h.redis.Set(ctx, session, createSession, time.Hour).Err()
+	sessionId := fmt.Sprintf("session:%s", strconv.Itoa(int(rnd)))
+	err = h.redis.Set(ctx, sessionId, session, time.Hour).Err()
 	if err != nil {
 		return err
 	}
@@ -92,7 +89,7 @@ func (h *Handler) StartFlow(w http.ResponseWriter, r *http.Request) error {
 	uri.Path = "/start-flow"
 
 	q := uri.Query()
-	q.Add("session_id", session)
+	q.Add("session_id", sessionId)
 	uri.RawQuery = q.Encode()
 
 	err = common.WriteJSON(w, http.StatusOK, &StartFlowResponse{URL: uri.String()})
