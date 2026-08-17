@@ -20,9 +20,12 @@ func main() {
 	dbName := os.Getenv("MONGO_DB_NAME")
 	db := mongo.Database(dbName)
 
+	// minio
+	minio := configs.NewMinioClient()
+
 	// game seed
 	gameRepo := game.NewRepository(db.Collection("game"))
-	gameService := game.NewService(gameRepo)
+	gameService := game.NewService(gameRepo, minio)
 	err := gameService.SeedAll(context.Background())
 	if err != nil {
 		panic(err)

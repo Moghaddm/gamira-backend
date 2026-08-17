@@ -17,7 +17,7 @@ func main() {
 	slog.SetDefault(logger)
 
 	// clients
-	redis := configs.NewRedis()
+	redis := configs.NewRedisClient()
 	mongo := configs.NewMongoClient()
 
 	// db

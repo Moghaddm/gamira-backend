@@ -7,7 +7,7 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-func NewRedis() *redis.Client {
+func NewRedisClient() *redis.Client {
 	host := os.Getenv("REDIS_HOST")
 	port := os.Getenv("REDIS_PORT")
 	password := os.Getenv("REDIS_PASSWORD")
